@@ -1,0 +1,35 @@
+version: "3.7"
+
+services:
+  api:
+    build: .
+    command: npm run dev
+    restart: always
+    ports:
+      - 3000:3000
+    volumes:
+      - ./:/app
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: demo
+      MYSQL_ROOT_PASSWORD: vipul123
+    ports:
+      - 3306:3306
+
+  localtunnel:
+    image: efrecon/localtunnel
+    restart: on-failure
+    volumes:
+      - ./subdomain.js:/app/subdomain.js
+    entrypoint: sh -c '/usr/bin/lt --local-host api --port 3000 --subdomain `/app/subdomain.js`'
+    env_file:
+      - .env.local
+    links:
+      - api
+    depends_on:
+      - api
